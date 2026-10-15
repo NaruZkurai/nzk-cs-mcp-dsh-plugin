@@ -14,7 +14,14 @@ mcp__csgraph__chain         mcp__csgraph__kinds      mcp__csgraph__definitions
 mcp__csgraph__subgraph      mcp__csgraph__export     mcp__csgraph__projects
 mcp__csgraph__state         mcp__csgraph__index      mcp__csgraph__index_cancel
 mcp__csgraph__browse        mcp__csgraph__settings   mcp__csgraph__viewer_state
-mcp__csgraph__reorg
+mcp__csgraph__reorg         mcp__csgraph__parse_check
+mcp__csgraph__select_decls  mcp__csgraph__move_decls mcp__csgraph__grep
+mcp__csgraph__fuzzy_search  mcp__csgraph__resolve_chain
+mcp__csgraph__code_block    mcp__csgraph__rename_symbol
+mcp__csgraph__qualify_symbols
+mcp__csgraph__expand_namespace
+mcp__csgraph__write_file    mcp__csgraph__apply_edits
+mcp__csgraph__find_duplicates
 ```
 
 This package ships **configuration + verification only**: no Host/Client entry
@@ -27,7 +34,7 @@ shape as the official MCP bundle template.
   inserts one `@deepseek-ai/dsh-mcp-client` row named `csgraph`.
 - Spawns `csgraph --mcp --repo <repo> --root <rel> --threads N` over stdio.
 - Exposes whichever tools `tools/list` advertises under the `mcp__csgraph__`
-  namespace (currently 22).
+  namespace (currently 35).
 - Provides an idempotent installer (`install.sh`) and a sub-10-second smoke test
   (`test/smoke.mjs`) that proves the real binary still speaks the protocol.
 
@@ -137,8 +144,8 @@ csgraph smoke test
   binary: /2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph
   repo:   /2tb/@/nzk/git/vrcCS
   root:   _sealed_src  threads: 4
-  tools:  22 (api_call, browse, chain, decls, definitions, doc, export, find, index, index_cancel, kinds, node, projects, refs, relation, reorg, search, settings, source, state, subgraph, viewer_state)
-PASS: 22 tools in ~2500 ms
+  tools:  35 (api_call, apply_edits, browse, chain, code_block, decls, definitions, doc, expand_namespace, export, find, find_duplicates, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, projects, qualify_symbols, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, write_file)
+PASS: 35 tools in ~2800 ms
 ```
 
 ### Under DSH
@@ -176,7 +183,7 @@ file leaves a one-time `<file>.dsh-plugin-vrcs.bak` next to it.
 | `csgraph binary not found or not a file` | The path exists but is not a file, or is not executable. Build it: `cargo build` in `cs viewer builder`. |
 | MCP connection fails at startup, harness still boots | `failOnStartupError: true` is set in the entry but DSH's startup policy keeps optional MCP entries from aborting the harness. Check the log line, then re-run `node test/smoke.mjs`. |
 | Zero `mcp__csgraph__*` tools | The server connected but advertised no tools, or the entry is not active. Confirm the patch entry exists and the profile was restarted; then run the smoke test. |
-| Tools take ~2–4 s to appear at startup | csgraph indexes the repo before answering `tools/list` (39 files ≈ 2 s, 4 workers). This is expected, not a hang. |
+| Tools take ~2–4 s to appear at startup | csgraph indexes the repo before answering `tools/list` (52 files ≈ 3 s, 4 workers). This is expected, not a hang. |
 | Path with spaces fails in YAML | Installer output always quotes scalars (`"/…/cs viewer builder/…"`). Quote hand-written paths the same way. |
 | Profile file refused/backup not written | Profile files may be root-owned. Re-run with sufficient privileges; `install.sh` never escalates on its own. |
 | `--dry-run` prints but nothing changes | By design: dry-run performs no writes and no backups. |
