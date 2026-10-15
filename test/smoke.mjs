@@ -24,29 +24,52 @@ const DEFAULT_TIMEOUT_MS = 10_000
 // was written (csgraph 2.0.0). Every name below must be present. New/additional
 // tools are allowed and logged, never a failure; drop or rename a baseline name
 // only when the server genuinely removed that tool.
+//
+// The 22 routed tools plus the 19 MCP-only tools (14 edit + preview_change +
+// 4 aux) are pinned here: 41 total. `preview_change` is the fifth-pass
+// read-only signature/call-site change preview (M3 slice 2).
 const BASELINE_TOOLS = [
   'api_call',
+  'apply_edits',
   'browse',
   'chain',
+  'code_block',
+  'copy_path',
+  'counts',
   'decls',
   'definitions',
   'doc',
+  'expand_namespace',
   'export',
   'find',
+  'find_duplicates',
+  'functionize',
+  'fuzzy_search',
+  'grep',
   'index',
   'index_cancel',
   'kinds',
+  'move_decls',
   'node',
+  'parse_check',
+  'preview_change',
   'projects',
+  'qualify_symbols',
+  'reformat',
   'refs',
   'relation',
+  'rename_symbol',
   'reorg',
+  'resolve_chain',
   'search',
+  'select_decls',
   'settings',
   'source',
   'state',
   'subgraph',
   'viewer_state',
+  'workspace',
+  'write_file',
 ].sort()
 
 function parseArgs(argv) {

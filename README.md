@@ -41,7 +41,7 @@ shape as the official MCP bundle template.
   `CSGRAPH_SPLIT_SERVERS=1`) keeps the old one-server-per-repo shape. See
   [Several repositories](#several-repositories-one-mcp-server).
 - Exposes whichever tools `tools/list` advertises under the `mcp__csgraph__`
-  namespace (currently 40).
+  namespace (currently 41).
 - Provides an idempotent installer (`install.sh`) and a sub-10-second smoke test
   (`test/smoke.mjs`) that proves the real binary still speaks the protocol.
 
@@ -219,8 +219,8 @@ csgraph smoke test
   binary: /2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph
   repo:   /2tb/@/nzk/git/vrcCS
   root:   _sealed_src  threads: 4
-  tools:  40 (api_call, apply_edits, browse, chain, code_block, copy_path, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
-PASS: 40 tools in ~3800 ms
+  tools:  41 (api_call, apply_edits, browse, chain, code_block, copy_path, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, preview_change, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
+PASS: 41 tools in ~3000 ms
 ```
 
 ### Under DSH
