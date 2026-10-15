@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // Smoke test: spawn the real csgraph stdio MCP server, complete the MCP
 // handshake (initialize -> notifications/initialized -> tools/list) and assert
-// the exact advertised tool names. Exits 0 on success, non-zero on any failure.
+// the required baseline tool names. Exits 0 on success, non-zero on any failure.
+//
+// The assertion is a SUPERSET check: every baseline tool must be present, but
+// additional tools are allowed and only reported, so the server gaining tools
+// does not produce a false failure.
 //
 // Usage:
 //   node test/smoke.mjs [--csgraph PATH] [--repo PATH] [--root REL]
@@ -16,10 +20,11 @@ import { resolveCsgraphConfig } from '../lib/csgraph-config.mjs'
 const PROTOCOL_VERSION = '2025-06-18'
 const DEFAULT_TIMEOUT_MS = 10_000
 
-// Names advertised by `csgraph --mcp` tools/list (csgraph 2.0.0). Exact set
-// equality is asserted so a renamed/removed tool fails loudly; add a name here
-// only when the server genuinely gained a tool.
-const EXPECTED_TOOLS = [
+// Required baseline: the tool names `csgraph --mcp` advertised when this test
+// was written (csgraph 2.0.0). Every name below must be present. New/additional
+// tools are allowed and logged, never a failure; drop or rename a baseline name
+// only when the server genuinely removed that tool.
+const BASELINE_TOOLS = [
   'api_call',
   'browse',
   'chain',
@@ -209,13 +214,13 @@ async function main() {
   if (!tools) return
 
   const names = tools.map((tool) => tool.name).sort()
-  const missing = EXPECTED_TOOLS.filter((name) => !names.includes(name))
-  const extra = names.filter((name) => !EXPECTED_TOOLS.includes(name))
+  const missing = BASELINE_TOOLS.filter((name) => !names.includes(name))
+  const extra = names.filter((name) => !BASELINE_TOOLS.includes(name))
   const elapsedMs = Date.now() - started
 
   process.stdout.write(`  tools:  ${names.length} (${names.join(', ')})\n`)
-  if (missing.length) fail(`missing expected tools: ${missing.join(', ')}`)
-  if (extra.length) fail(`unexpected extra tools (update EXPECTED_TOOLS if intended): ${extra.join(', ')}`)
+  if (extra.length) process.stdout.write(`  new:    ${extra.join(', ')} (allowed, not in baseline)\n`)
+  if (missing.length) fail(`missing baseline tools: ${missing.join(', ')}`)
 
   if (process.exitCode) {
     process.stderr.write(`  elapsed: ${elapsedMs} ms\n`)

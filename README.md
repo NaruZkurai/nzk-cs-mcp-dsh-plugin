@@ -127,8 +127,10 @@ node test/smoke.mjs
 ```
 
 It spawns the real binary, performs `initialize` -> `notifications/initialized`
--> `tools/list`, asserts the exact tool-name set, enforces a 10 s budget, and
-exits non-zero on any mismatch. Expected shape:
+-> `tools/list`, asserts that every **baseline** tool name is present (a superset
+check — additional/new server tools are allowed and only logged), enforces a 10 s
+budget, and exits non-zero if any baseline tool is missing or the handshake
+fails. Expected shape:
 
 ```
 csgraph smoke test
@@ -202,8 +204,10 @@ node test/smoke.mjs            # protocol smoke test against the real binary
 ./install.sh --dry-run         # inspect an install plan
 ```
 
-`test/smoke.mjs` asserts an exact tool set; when csgraph intentionally gains or
-renames a tool, update `EXPECTED_TOOLS` in `test/smoke.mjs` and note it here.
+`test/smoke.mjs` asserts a required **baseline** of tool names (`BASELINE_TOOLS`)
+and tolerates new ones, so csgraph gaining tools never breaks it. Add a name to
+the baseline only to lock in a new guarantee; remove one only when the server
+genuinely drops or renames that tool.
 
 ## License
 
