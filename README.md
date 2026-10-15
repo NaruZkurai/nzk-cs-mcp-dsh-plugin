@@ -33,8 +33,11 @@ shape as the official MCP bundle template.
 - Declares a DSH profile bundle (`dsh.bundle.patch -> ./cordis.patch.yml`) that
   inserts one `@deepseek-ai/dsh-mcp-client` row named `csgraph`.
 - Spawns `csgraph --mcp --repo <repo> --root <rel> --threads N` over stdio.
+- Supports several repositories at once: one MCP server per repository
+  (`csgraph`, `csgraph2`, ...), driven by `CSGRAPH_REPOS`. See
+  [Several repositories](#several-repositories-one-mcp-server-per-repo).
 - Exposes whichever tools `tools/list` advertises under the `mcp__csgraph__`
-  namespace (currently 39).
+  namespace (currently 40).
 - Provides an idempotent installer (`install.sh`) and a sub-10-second smoke test
   (`test/smoke.mjs`) that proves the real binary still speaks the protocol.
 
@@ -47,8 +50,9 @@ shape as the official MCP bundle template.
 | `cordis.patch.example.yml` | Copy-paste registration example (resolved + env variants) |
 | `install.sh` | Idempotent installer, `--dry-run`, `--uninstall` |
 | `lib/install.mjs` | Installer implementation |
-| `lib/csgraph-config.mjs` | Binary/repo/root/threads resolution (shared) |
+| `lib/csgraph-config.mjs` | Binary/repo/root/threads resolution (shared, multi-repo aware) |
 | `test/smoke.mjs` | Spawns the real binary, initialize + `tools/list`, asserts tool names |
+| `test/config.test.mjs` | `node:test` unit checks for multi-repo expansion + installer |
 
 ## Requirements
 
@@ -121,8 +125,59 @@ harness process must see these when the bundle is activated directly:
 |---|---|---|
 | `CSGRAPH_BIN` | (required) | Absolute path to the `csgraph` binary |
 | `CSGRAPH_REPO` | (required) | Repository the engine indexes |
+| `CSGRAPH_REPOS` | (unset) | Multi-repo list (comma-separated or JSON array); one server per entry |
 | `CSGRAPH_ROOT` | `_sealed_src` | Index root relative to the repo |
 | `CSGRAPH_THREADS` | `4` | Worker threads |
+
+### 5. Several repositories: one MCP server per repo
+
+The bridge is **one MCP server per repository**. `CSGRAPH_REPOS` (or the
+installer flag `--repos`) takes either a comma-separated list or a JSON array;
+each entry becomes its own `@deepseek-ai/dsh-mcp-client` row with a distinct id
+and tool namespace:
+
+| Entry | serverName | row id | tools |
+|---|---|---|---|
+| 1st repo | `csgraph` | `csgraph-mcp` | `mcp__csgraph__*` |
+| 2nd repo | `csgraph2` | `csgraph2-mcp` | `mcp__csgraph2__*` |
+| 3rd repo | `csgraph3` | `csgraph3-mcp` | `mcp__csgraph3__*` |
+
+Each server gets its own `--repo`/`cwd`, and therefore its own index; the model
+picks the namespace it needs. JSON entries may be plain path strings, or objects
+that override values per repo:
+
+```sh
+# Comma-separated:
+./install.sh --profile-dir ~/.dsh/profiles/web \
+  --repos /repo/one,/repo/two
+
+# JSON array, per-entry overrides (root/threads/bin/serverName):
+CSGRAPH_REPOS='[
+  "/repo/one",
+  {"repo": "/repo/two", "root": "src", "threads": 2, "serverName": "second"}
+]' ./install.sh --profile-dir ~/.dsh/profiles/web
+
+# Inspect the plan first; writes nothing:
+./install.sh --mode print --repos /repo/one,/repo/two --csgraph /abs/csgraph
+```
+
+Rules and behavior:
+
+- With no multi-repo input the result is exactly the single `csgraph` server
+  described by `CSGRAPH_REPO` / `--repo` — nothing changes for existing profiles.
+- `CSGRAPH_BIN` / `--csgraph`, `CSGRAPH_ROOT` / `--root` and
+  `CSGRAPH_THREADS` / `--threads` still apply globally; a JSON entry may override
+  them for its own repo.
+- `--server-name` renames the **first** server; later ones append `2`, `3`, ...
+  Ids are always `<serverName>-mcp` and must be distinct.
+- Every repository path is validated: a missing path fails with exit code 2 and
+  names the offending repo. Nothing is written when validation fails.
+- All entries are written into the one managed patch block, so re-running
+  `install.sh` refreshes them in place (idempotent) and `--uninstall` removes
+  them together.
+- **Adding or changing a server only takes effect after the profile is
+  restarted/reloaded** — no MCP connection is established while the harness is
+  running. `install.sh` prints this reminder after a real (non-dry-run) change.
 
 ## Verify
 
@@ -144,8 +199,8 @@ csgraph smoke test
   binary: /2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph
   repo:   /2tb/@/nzk/git/vrcCS
   root:   _sealed_src  threads: 4
-  tools:  39 (api_call, apply_edits, browse, chain, code_block, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
-PASS: 39 tools in ~2800 ms
+  tools:  40 (api_call, apply_edits, browse, chain, code_block, copy_path, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
+PASS: 40 tools in ~3800 ms
 ```
 
 ### Under DSH
@@ -207,8 +262,9 @@ repository:
 ## Development
 
 ```sh
-node test/smoke.mjs            # protocol smoke test against the real binary
-./install.sh --dry-run         # inspect an install plan
+node test/smoke.mjs                    # protocol smoke test against the real binary
+node --test test/config.test.mjs       # multi-repo config / installer unit tests
+./install.sh --dry-run                 # inspect an install plan
 ```
 
 `test/smoke.mjs` asserts a required **baseline** of tool names (`BASELINE_TOOLS`)

@@ -9,7 +9,11 @@
 #   ./install.sh --uninstall --profile-dir ~/.dsh/profiles/web
 #
 # See ./install.sh --help for all options and env fallbacks
-# (CSGRAPH_BIN, CSGRAPH_REPO, CSGRAPH_ROOT, CSGRAPH_THREADS, DSH_PROFILE_DIR).
+# (CSGRAPH_BIN, CSGRAPH_REPO, CSGRAPH_REPOS, CSGRAPH_ROOT, CSGRAPH_THREADS,
+# DSH_PROFILE_DIR).
+#
+# CSGRAPH_REPOS (comma-separated or JSON array) registers one MCP server per
+# repository: csgraph, csgraph2, ... Adding a server needs a profile reload.
 
 set -eu
 

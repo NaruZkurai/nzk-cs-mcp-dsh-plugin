@@ -22,6 +22,7 @@
   "scripts": {
     "smoke": "node test/smoke.mjs",
     "test": "node test/smoke.mjs",
+    "test:config": "node --test test/config.test.mjs",
     "install:dry-run": "./install.sh --dry-run"
   },
   "engines": {
