@@ -12,8 +12,10 @@
 # (CSGRAPH_BIN, CSGRAPH_REPO, CSGRAPH_REPOS, CSGRAPH_ROOT, CSGRAPH_THREADS,
 # DSH_PROFILE_DIR).
 #
-# CSGRAPH_REPOS (comma-separated or JSON array) registers one MCP server per
-# repository: csgraph, csgraph2, ... Adding a server needs a profile reload.
+# CSGRAPH_REPOS (comma-separated or JSON array) binds every repository to ONE
+# MCP server by default (argv repeats --repo; the first is the default). Pass
+# --split-servers (or CSGRAPH_SPLIT_SERVERS=1) for one server per repository:
+# csgraph, csgraph2, ... Any change needs a profile reload.
 
 set -eu
 

@@ -33,9 +33,13 @@ shape as the official MCP bundle template.
 - Declares a DSH profile bundle (`dsh.bundle.patch -> ./cordis.patch.yml`) that
   inserts one `@deepseek-ai/dsh-mcp-client` row named `csgraph`.
 - Spawns `csgraph --mcp --repo <repo> --root <rel> --threads N` over stdio.
-- Supports several repositories at once: one MCP server per repository
-  (`csgraph`, `csgraph2`, ...), driven by `CSGRAPH_REPOS`. See
-  [Several repositories](#several-repositories-one-mcp-server-per-repo).
+- Binds several repositories to **one** MCP server by default: the argv repeats
+  `--repo` (`--mcp --repo A --repo B ... --root R --threads T`), the first repo
+  is the default/primary and the server `cwd`, and every tool takes an optional
+  `repo` argument (1-based index, path, or unique basename) to pick one.
+  `CSGRAPH_REPOS` drives this. An opt-in split (`--split-servers` /
+  `CSGRAPH_SPLIT_SERVERS=1`) keeps the old one-server-per-repo shape. See
+  [Several repositories](#several-repositories-one-mcp-server).
 - Exposes whichever tools `tools/list` advertises under the `mcp__csgraph__`
   namespace (currently 40).
 - Provides an idempotent installer (`install.sh`) and a sub-10-second smoke test
@@ -125,29 +129,32 @@ harness process must see these when the bundle is activated directly:
 |---|---|---|
 | `CSGRAPH_BIN` | (required) | Absolute path to the `csgraph` binary |
 | `CSGRAPH_REPO` | (required) | Repository the engine indexes |
-| `CSGRAPH_REPOS` | (unset) | Multi-repo list (comma-separated or JSON array); one server per entry |
+| `CSGRAPH_REPOS` | (unset) | Multi-repo list (comma-separated or JSON array); all entries are bound to one server by default |
+| `CSGRAPH_SPLIT_SERVERS` | (unset) | `1`/`true`/`yes`/`on` opts into one server per repository |
 | `CSGRAPH_ROOT` | `_sealed_src` | Index root relative to the repo |
 | `CSGRAPH_THREADS` | `4` | Worker threads |
 
-### 5. Several repositories: one MCP server per repo
+### 5. Several repositories: one MCP server, per-call `repo`
 
-The bridge is **one MCP server per repository**. `CSGRAPH_REPOS` (or the
-installer flag `--repos`) takes either a comma-separated list or a JSON array;
-each entry becomes its own `@deepseek-ai/dsh-mcp-client` row with a distinct id
-and tool namespace:
+By default the bridge registers **one** MCP server bound to every repository in
+`CSGRAPH_REPOS` (or the installer flag `--repos`). Its argv repeats `--repo`:
 
-| Entry | serverName | row id | tools |
-|---|---|---|---|
-| 1st repo | `csgraph` | `csgraph-mcp` | `mcp__csgraph__*` |
-| 2nd repo | `csgraph2` | `csgraph2-mcp` | `mcp__csgraph2__*` |
-| 3rd repo | `csgraph3` | `csgraph3-mcp` | `mcp__csgraph3__*` |
+```
+--mcp --repo A --repo B --repo C --root <R> --threads <T>
+```
 
-Each server gets its own `--repo`/`cwd`, and therefore its own index; the model
-picks the namespace it needs. JSON entries may be plain path strings, or objects
-that override values per repo:
+The first repo is the primary/default and the server's `cwd`. `--root` and
+`--exclude` are **global** and apply to every bound repo. Every tool gains a
+`repo` argument: a 1-based index (`"2"` or `2`), an absolute or cwd-relative
+path, or a unique repo basename (case-insensitive). Omit it to run against the
+primary. An unknown or ambiguous value is an MCP error that lists every bound
+repo with its index. `index` and `index_cancel` act on the selected repo only;
+`workspace` reports every bound repo (`repos: [{index, repo, roots, loaded,
+slots, default}]`). There is therefore one tool namespace,
+`mcp__csgraph__*`.
 
 ```sh
-# Comma-separated:
+# Comma-separated, one merged server:
 ./install.sh --profile-dir ~/.dsh/profiles/web \
   --repos /repo/one,/repo/two
 
@@ -161,15 +168,28 @@ CSGRAPH_REPOS='[
 ./install.sh --mode print --repos /repo/one,/repo/two --csgraph /abs/csgraph
 ```
 
+Opt-in split mode (`--split-servers` or `CSGRAPH_SPLIT_SERVERS=1`) keeps the old
+one-server-per-repository shape: `csgraph-mcp`, `csgraph2-mcp`, ... with distinct
+tool namespaces (`mcp__csgraph__*`, `mcp__csgraph2__*`, ...).
+
+| Mode | Entry | serverName | row id | tools |
+|---|---|---|---|---|
+| default | 1st/only | `csgraph` | `csgraph-mcp` | `mcp__csgraph__*` |
+| split | 1st repo | `csgraph` | `csgraph-mcp` | `mcp__csgraph__*` |
+| split | 2nd repo | `csgraph2` | `csgraph2-mcp` | `mcp__csgraph2__*` |
+| split | 3rd repo | `csgraph3` | `csgraph3-mcp` | `mcp__csgraph3__*` |
+
 Rules and behavior:
 
 - With no multi-repo input the result is exactly the single `csgraph` server
   described by `CSGRAPH_REPO` / `--repo` — nothing changes for existing profiles.
-- `CSGRAPH_BIN` / `--csgraph`, `CSGRAPH_ROOT` / `--root` and
-  `CSGRAPH_THREADS` / `--threads` still apply globally; a JSON entry may override
-  them for its own repo.
-- `--server-name` renames the **first** server; later ones append `2`, `3`, ...
-  Ids are always `<serverName>-mcp` and must be distinct.
+- In the default mode `CSGRAPH_BIN` / `--csgraph`, `CSGRAPH_ROOT` / `--root` and
+  `CSGRAPH_THREADS` / `--threads` apply globally; the first entry's values win
+  (the server has one global root/thread count). In split mode a JSON entry may
+  override them for its own repo.
+- `--server-name` renames the server (default mode) or the **first** server in
+  split mode; later split servers append `2`, `3`, ... Ids are always
+  `<serverName>-mcp` and must be distinct.
 - Every repository path is validated: a missing path fails with exit code 2 and
   names the offending repo. Nothing is written when validation fails.
 - All entries are written into the one managed patch block, so re-running
