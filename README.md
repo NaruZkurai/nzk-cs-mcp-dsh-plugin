@@ -34,7 +34,7 @@ shape as the official MCP bundle template.
   inserts one `@deepseek-ai/dsh-mcp-client` row named `csgraph`.
 - Spawns `csgraph --mcp --repo <repo> --root <rel> --threads N` over stdio.
 - Exposes whichever tools `tools/list` advertises under the `mcp__csgraph__`
-  namespace (currently 35).
+  namespace (currently 39).
 - Provides an idempotent installer (`install.sh`) and a sub-10-second smoke test
   (`test/smoke.mjs`) that proves the real binary still speaks the protocol.
 
@@ -144,8 +144,8 @@ csgraph smoke test
   binary: /2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph
   repo:   /2tb/@/nzk/git/vrcCS
   root:   _sealed_src  threads: 4
-  tools:  35 (api_call, apply_edits, browse, chain, code_block, decls, definitions, doc, expand_namespace, export, find, find_duplicates, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, projects, qualify_symbols, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, write_file)
-PASS: 35 tools in ~2800 ms
+  tools:  39 (api_call, apply_edits, browse, chain, code_block, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
+PASS: 39 tools in ~2800 ms
 ```
 
 ### Under DSH
