@@ -1,0 +1,28 @@
+# Bundle patch for @nzk/dsh-plugin-vrcs.
+#
+# Registers the csgraph stdio MCP server through the in-box
+# @deepseek-ai/dsh-mcp-client bridge. Referenced by package.json
+# `dsh.bundle.patch`, so a DSH profile that lists this bundle picks it up.
+#
+# The `!!js` expressions keep this file machine independent: set CSGRAPH_BIN and
+# CSGRAPH_REPO in the environment of the DSH process before starting it
+# (CSGRAPH_ROOT defaults to _sealed_src; CSGRAPH_THREADS defaults to 4).
+# If you would rather bake resolved absolute paths into the profile and avoid
+# env vars entirely, use install.sh --mode patch instead (recommended).
+- insert:
+    - id: csgraph-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: csgraph
+        transport: stdio
+        command: !!js process.env.CSGRAPH_BIN
+        args:
+          - '--mcp'
+          - '--repo'
+          - !!js process.env.CSGRAPH_REPO
+          - '--root'
+          - !!js process.env.CSGRAPH_ROOT || '_sealed_src'
+          - '--threads'
+          - !!js String(process.env.CSGRAPH_THREADS || '4')
+        cwd: !!js process.env.CSGRAPH_REPO
+        failOnStartupError: true

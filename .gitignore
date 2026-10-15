@@ -1,0 +1,12 @@
+# Local installs
+node_modules/
+
+# Scratch state from install.sh verification runs
+.test-tmp/
+
+# install.sh backups of a profile's cordis.patch.yml / package.json
+*.dsh-plugin-vrcs.bak
+
+# Logs / editor noise
+*.log
+.DS_Store

@@ -1,0 +1,57 @@
+# Example: register the csgraph MCP server in a DSH profile.
+#
+# Copy the entry below into <profile>/cordis.patch.yml (a top-level YAML array of
+# loader patch entries) or let `install.sh --mode patch` manage it for you.
+#
+# Tools surface as mcp__csgraph__<tool>, e.g. mcp__csgraph__search,
+# mcp__csgraph__node, mcp__csgraph__api_call.
+#
+# ---------------------------------------------------------------------------
+# Variant A — resolved absolute paths (what install.sh writes; no env needed).
+# Note the quoted binary path: it contains a space.
+# ---------------------------------------------------------------------------
+- insert:
+    - id: csgraph-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: csgraph
+        transport: stdio
+        command: "/2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph"
+        args:
+          - "--mcp"
+          - "--repo"
+          - "/2tb/@/nzk/git/vrcCS"
+          - "--root"
+          - "_sealed_src"
+          - "--threads"
+          - "4"
+        cwd: "/2tb/@/nzk/git/vrcCS"
+        failOnStartupError: true
+
+# ---------------------------------------------------------------------------
+# Variant B — environment driven (machine independent). This is exactly what the
+# bundle's own cordis.patch.yml contains; the DSH process must see CSGRAPH_BIN
+# and CSGRAPH_REPO. Loader `!!js` expressions are evaluated by DSH.
+# ---------------------------------------------------------------------------
+# - insert:
+#     - id: csgraph-mcp
+#       name: '@deepseek-ai/dsh-mcp-client'
+#       config:
+#         serverName: csgraph
+#         transport: stdio
+#         command: !!js process.env.CSGRAPH_BIN
+#         args:
+#           - '--mcp'
+#           - '--repo'
+#           - !!js process.env.CSGRAPH_REPO
+#           - '--root'
+#           - !!js process.env.CSGRAPH_ROOT || '_sealed_src'
+#           - '--threads'
+#           - !!js String(process.env.CSGRAPH_THREADS || '4')
+#         cwd: !!js process.env.CSGRAPH_REPO
+#         failOnStartupError: true
+
+# ---------------------------------------------------------------------------
+# Variant C — command-line alternative that avoids hand-editing YAML:
+#   dsh plugin --profile <name> add /path/to/dsh_plugin
+# ---------------------------------------------------------------------------
