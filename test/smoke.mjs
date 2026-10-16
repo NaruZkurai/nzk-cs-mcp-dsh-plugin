@@ -25,15 +25,18 @@ const DEFAULT_TIMEOUT_MS = 10_000
 // tools are allowed and logged, never a failure; drop or rename a baseline name
 // only when the server genuinely removed that tool.
 //
-// The 22 routed tools plus the 19 MCP-only tools (14 edit + preview_change +
-// 4 aux) are pinned here: 41 total. `preview_change` is the fifth-pass
-// read-only signature/call-site change preview (M3 slice 2).
+// The 22 routed tools plus the 20 MCP-only tools (14 edit + preview_change +
+// 5 aux) are pinned here: 42 total. `preview_change` is the fifth-pass
+// read-only signature/call-site change preview (M3 slice 2); `compile_diff` is
+// the MCP-native differential Roslyn compile (no Unity process, no licence, no
+// window focus).
 const BASELINE_TOOLS = [
   'api_call',
   'apply_edits',
   'browse',
   'chain',
   'code_block',
+  'compile_diff',
   'copy_path',
   'counts',
   'decls',

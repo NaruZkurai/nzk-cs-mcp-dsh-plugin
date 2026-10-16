@@ -12,7 +12,7 @@ instead of the vrcCS repo. Use it when a teammate (or the Lead) wants native
 | root | `_sealed_src` | `Assets/NZK toolkit v5` |
 | tool prefix | `mcp__csgraph__*` | `mcp__csgraph_nemesis__*` |
 
-Both servers run the same binary and expose the same 41 tools; they differ only
+Both servers run the same binary and expose the same 42 tools; they differ only
 in default repo/root. **A profile reload (restarting the dsh web host) is
 required to pick either up.**
 
@@ -46,7 +46,7 @@ finish with the constraint "everything through the MCP" either way.
 ## Verify after enabling
 
 ```sh
-python3 tools/smoke.mjs   # from the main bundle: 41 tools
+python3 tools/smoke.mjs   # from the main bundle: 42 tools
 ```
 
 Then in the model's tool list, look for `mcp__csgraph_nemesis__state`; a

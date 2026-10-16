@@ -219,8 +219,8 @@ csgraph smoke test
   binary: /2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph
   repo:   /2tb/@/nzk/git/vrcCS
   root:   _sealed_src  threads: 4
-  tools:  41 (api_call, apply_edits, browse, chain, code_block, copy_path, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, preview_change, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
-PASS: 41 tools in ~3000 ms
+  tools:  42 (api_call, apply_edits, browse, chain, code_block, compile_diff, copy_path, counts, decls, definitions, doc, expand_namespace, export, find, find_duplicates, functionize, fuzzy_search, grep, index, index_cancel, kinds, move_decls, node, parse_check, preview_change, projects, qualify_symbols, reformat, refs, relation, rename_symbol, reorg, resolve_chain, search, select_decls, settings, source, state, subgraph, viewer_state, workspace, write_file)
+PASS: 42 tools in 1113 ms
 ```
 
 ### Under DSH
