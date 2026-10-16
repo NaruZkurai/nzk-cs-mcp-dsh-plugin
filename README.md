@@ -22,6 +22,9 @@ mcp__csgraph__qualify_symbols
 mcp__csgraph__expand_namespace
 mcp__csgraph__write_file    mcp__csgraph__apply_edits
 mcp__csgraph__find_duplicates
+mcp__csgraph__compile_diff  mcp__csgraph__copy_path  mcp__csgraph__counts
+mcp__csgraph__functionize   mcp__csgraph__reformat  mcp__csgraph__workspace
+mcp__csgraph__preview_change
 ```
 
 This package ships **configuration + verification only**: no Host/Client entry
@@ -41,7 +44,7 @@ shape as the official MCP bundle template.
   `CSGRAPH_SPLIT_SERVERS=1`) keeps the old one-server-per-repo shape. See
   [Several repositories](#several-repositories-one-mcp-server).
 - Exposes whichever tools `tools/list` advertises under the `mcp__csgraph__`
-  namespace (currently 41).
+  namespace (currently 42).
 - Provides an idempotent installer (`install.sh`) and a sub-10-second smoke test
   (`test/smoke.mjs`) that proves the real binary still speaks the protocol.
 

@@ -46,7 +46,7 @@ finish with the constraint "everything through the MCP" either way.
 ## Verify after enabling
 
 ```sh
-python3 tools/smoke.mjs   # from the main bundle: 42 tools
+node ../test/smoke.mjs   # from the main bundle: 42 tools
 ```
 
 Then in the model's tool list, look for `mcp__csgraph_nemesis__state`; a
