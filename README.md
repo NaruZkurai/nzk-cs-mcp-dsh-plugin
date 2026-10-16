@@ -31,6 +31,21 @@ This package ships **configuration + verification only**: no Host/Client entry
 code. It follows DSH's config-only-bundle pattern (`dsh.bundle.patch`), the same
 shape as the official MCP bundle template.
 
+## Related repositories
+
+```
+nzk-cs-viewer  (GUI cs viewer, Rust engine + Tauri host + frontend)
+      ▲ used by
+NZK-cs-mcp     (the csgraph engine + `csgraph --mcp` stdio server)
+      ▲ used by
+this repo      (the DSH bridge that registers that server as mcp__csgraph__*)
+```
+
+- **MCP server:** <https://github.com/NaruZkurai/NZK-cs-mcp> — the engine this
+  bundle spawns (`csgraph --mcp`).
+- **GUI cs viewer:** <https://github.com/NaruZkurai/nzk-cs-viewer> — the viewer
+  the engine is built from.
+
 ## What it does
 
 - Declares a DSH profile bundle (`dsh.bundle.patch -> ./cordis.patch.yml`) that
