@@ -217,6 +217,47 @@ Rules and behavior:
   restarted/reloaded** — no MCP connection is established while the harness is
   running. `install.sh` prints this reminder after a real (non-dry-run) change.
 
+## Settings toggle (default: on)
+
+The bridge is registered **on by default**. `install.sh` writes an explicit
+top-level override alongside the inserted entry, inside its managed block:
+
+```yaml
+- insert:
+    - id: csgraph-mcp
+      name: "@deepseek-ai/dsh-mcp-client"
+      config: { ... }
+- id: csgraph-mcp
+  disabled: false
+```
+
+Why a separate top-level row rather than just the `- insert:` entry: DSH's
+plugin manager (`@deepseek-ai/dsh-plugin-manager`) is what surfaces the toggle.
+Its `writePluginEnabled()` finds the **last top-level** patch item whose `id`
+matches, **skipping any item that carries `insert`**, and sets `disabled` on it;
+with no match it appends its own `{id, disabled}` entry. An inserted entry alone
+is therefore not addressable — the extra row is what makes the bridge toggleable.
+
+Where the toggle actually lives:
+
+- **Web sidebar -> Plugins page** (`@deepseek-ai/dsh-client-ui-plugin-manager`)
+  manages the profile's bundles and their uniquely addressable rows. This is the
+  interactive switch.
+- The `plugin_manager` tool exposes the same operations to an agent (enabled in
+  Creator mode; every call needs `danger-full-access` or approval).
+- The **Settings -> Plugins list is read-only** by design: it reports state and
+  does not flip it. Do not look for the switch there.
+
+Default-on is enforced by `install.sh`, not merely by omission: re-running it
+strips the whole managed block and re-registers the bridge with
+`disabled: false`, so a row switched off in the UI (or edited by hand) returns to
+the default on the next install. Pass `--disabled` to register it off
+deliberately; `--enabled` is the explicit spelling of the default.
+
+Changing the toggle is picked up by HMR when the profile runs with it enabled,
+otherwise a profile reload/restart is required. Flipping it does not
+retroactively start or stop an already-running stdio child.
+
 ## Verify
 
 ### Protocol smoke test (no DSH required)
@@ -280,6 +321,8 @@ file leaves a one-time `<file>.dsh-plugin-vrcs.bak` next to it.
 | Path with spaces fails in YAML | Installer output always quotes scalars (`"/…/cs viewer builder/…"`). Quote hand-written paths the same way. |
 | Profile file refused/backup not written | Profile files may be root-owned. Re-run with sufficient privileges; `install.sh` never escalates on its own. |
 | `--dry-run` prints but nothing changes | By design: dry-run performs no writes and no backups. |
+| Plugin row is off and re-install does not fix it | Only `install.sh` restores the default. Re-run it (without `--disabled`); it rewrites the `id: csgraph-mcp` override to `disabled: false`. |
+| Toggle flipped but the bridge still runs | A profile reload/restart is needed; the toggle does not stop an already-running stdio child. |
 
 ## Security note
 
@@ -302,6 +345,7 @@ repository:
 ```sh
 node test/smoke.mjs                    # protocol smoke test against the real binary
 node --test test/config.test.mjs       # multi-repo config / installer unit tests
+node --test test/toggle.test.mjs       # settings-toggle contract (default on, reinstall restores it)
 ./install.sh --dry-run                 # inspect an install plan
 ```
 
