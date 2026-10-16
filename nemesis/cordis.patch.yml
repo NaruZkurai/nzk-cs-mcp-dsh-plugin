@@ -1,0 +1,29 @@
+# csgraph MCP bridge bound to the LIVE Nemesis Main Unity project.
+#
+# This is a ready-to-enable sibling of the main bundle entry (serverName
+# "csgraph", bound to /2tb/@/nzk/git/vrcCS). Enabling this one adds a SECOND
+# stdio server whose tools surface as mcp__csgraph_nemesis__<tool> and whose
+# workspace is the live Unity project:
+#
+#   repo/root : "Assets/NZK toolkit v5" inside Nemesis Main
+#   index     : that root only (22 files today, growing with the SPS work)
+#
+# Enable/disable with ./nemesis/enable.sh (see README.md). A profile reload is
+# required for the host to pick it up; enable.sh does not reload by itself.
+- insert:
+    - id: csgraph-nemesis-mcp
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: "csgraph-nemesis"
+        transport: stdio
+        command: "/2tb/@/nzk/git/vrcCS/cs viewer builder/target/debug/csgraph"
+        args:
+          - "--mcp"
+          - "--repo"
+          - "/run/media/naruzkurai/7239d970-fcaa-4df1-8bee-9d42d842204b/Nemesis Main"
+          - "--root"
+          - "Assets/NZK toolkit v5"
+          - "--threads"
+          - "4"
+        cwd: "/run/media/naruzkurai/7239d970-fcaa-4df1-8bee-9d42d842204b/Nemesis Main"
+        failOnStartupError: true
