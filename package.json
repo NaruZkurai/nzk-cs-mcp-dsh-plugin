@@ -1,6 +1,6 @@
 {
   "name": "@nzk/dsh-plugin-vrcs",
-  "version": "1.0.0",
+  "version": "1.261028.170347",
   "private": true,
   "description": "DSH profile bundle that bridges the csgraph stdio MCP server (C# graph + refactor tools) into the harness as mcp__csgraph__* tools.",
   "type": "module",
