@@ -1,9 +1,9 @@
 # @nzk/dsh-plugin-vrcs
 
 A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) profile
-bundle that bridges the **csgraph** stdio MCP server into the harness. Once
+bundle that bridges the **v3 csgraph** stdio MCP server into the harness. Once
 installed, the C# graph/refactor engine at
-`cs viewer builder/target/debug/csgraph` is callable through the in-box
+`CsViewerGitRepo/BaseCode/target/{release,debug}/csgraph` is callable through the in-box
 `@deepseek-ai/dsh-mcp-client` bridge, and its tools appear to the model as:
 
 ```
@@ -34,9 +34,9 @@ shape as the official MCP bundle template.
 ## Related repositories
 
 ```
-nzk-cs-viewer  (GUI cs viewer, Rust engine + Tauri host + frontend)
+nzk-cs-viewer  (v3 native GUI, winit + wgpu + egui)
       ▲ used by
-NZK-cs-mcp     (the csgraph engine + `csgraph --mcp` stdio server)
+NZK-cs-mcp     (the v3 csgraph engine + `csgraph --mcp` stdio server)
       ▲ used by
 this repo      (the DSH bridge that registers that server as mcp__csgraph__*)
 ```
